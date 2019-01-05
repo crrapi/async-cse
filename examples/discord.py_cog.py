@@ -22,9 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 # pylint: disable=R0903
+import time
+
 import discord
 from discord.ext import commands
 import async_cse
+
+
+# ----
+# Big thanks to surprise#1161 for this
+# ----
 
 
 class Google:
@@ -34,26 +41,69 @@ class Google:
         self.bot = bot
         self.google = async_cse.Search("API KEY HERE")  # insert your key here
 
-    @commands.command(name="google", aliases=["g"])
-    async def google_(self, ctx, *, query: str):
-        """Searches things on Google."""
+    @commands.group(
+        pass_context=True,
+        invoke_without_command=True,
+        name="search",
+        aliases=["g", "google"],
+    )
+    @commands.cooldown(
+        1, 10, commands.BucketType.guild
+    )  # after the first invoke, set time cooldown to 10
+    async def search(self, ctx, *, query: str):
+        """Search queries from Google"""
         try:
+            start = time.time()
             resp = (await self.google.search(query))[0]
         except async_cse.NoResults:
-            return await ctx.send("Oops, your query returned no results.")
+            return await ctx.send("No results for this query...")
+        except (async_cse.NoMoreRequests, async_cse.APIError):
+            return await ctx.send("Internal error ocurred, please try again later.")
+        else:
+            embed = discord.Embed(
+                title=resp.title,
+                description=resp.description,
+                colour=discord.Color.blurple(),
+                url=resp.url,
+            )
+            embed.set_thumbnail(url=resp.image_url)
+            end = time.time()
+            execution_time = f"{end - start:.2f}s"
+            embed.set_footer(text=execution_time)
+            await ctx.send(embed=embed)
+
+    @search.command(name="search_image", aliases=["i", "image"], pass_context=True)
+    @commands.cooldown(
+        1, 10, commands.BucketType.guild
+    )  # after the first invoke, set time cooldown to 10
+    async def search_image(self, ctx, query: str):
+        """Search images from Google"""
+        try:
+            start = time.time()
+            resp = (await self.google.search(query, image_search=True))[0]
+        except async_cse.NoResults:
+            return await ctx.send("No results for this query...")
         except (async_cse.NoMoreRequests, async_cse.APIError):
             return await ctx.send("An internal error occurred, please try again later.")
         else:
             embed = discord.Embed(
                 title=resp.title,
                 description=resp.description,
-                color=discord.Color.blurple(),
+                colour=discord.Color.blurple(),
                 url=resp.url,
             )
-            url = ctx.author.avatar_url_as(static_format="png", size=128)
-            embed.set_footer(text="Requested by {}".format(ctx.author), icon_url=url)
-            embed.set_image(url=resp.image_url)
+            embed.set_thumbnail(url=resp.image_url)
+            end = time.time()
+            execution_time = f"{end - start:.2f}s"
+            embed.set_footer(text=execution_time)
             await ctx.send(embed=embed)
+
+    @search.error
+    async def search_error_handler(self, ctx, error):
+        """Local error handler for search command"""
+        if isinstance(error, commands.CommandOnCooldown):
+            seconds = error.retry_after
+            await ctx.send(f"Wait {seconds:.2f}s!")
 
 
 def setup(bot):
