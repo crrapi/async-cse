@@ -27,7 +27,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 setuptools.setup(
     name="async_cse",
-    version="0.2.8",
+    version="0.2.9a",
     description="API wrapper for the Google Custom Search JSON API. https://developers.google.com/custom-search/v1/overview",
     url="https://github.com/crrapi/async-cse",
     author="crrapi",
