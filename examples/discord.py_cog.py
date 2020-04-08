@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018 Chris Rrapi
+Copyright (c) 2018-2020 crrapi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import async_cse
 # ----
 
 
-class Google:
+class Google(commands.Cog):
     """Commands for searching things on Google."""
 
     def __init__(self, bot):
@@ -76,7 +76,7 @@ class Google:
     @commands.cooldown(
         1, 10, commands.BucketType.guild
     )  # after the first invoke, set time cooldown to 10
-    async def search_image(self, ctx, query: str):
+    async def search_image(self, ctx, *, query: str):
         """Search images from Google"""
         try:
             start = time.time()

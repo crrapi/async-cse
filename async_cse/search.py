@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2018 Chris Rrapi
+Copyright (c) 2018-2020 crrapi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -72,8 +72,8 @@ class Result:
         """Converts a dict to Result objects"""
         results = list()
         for item in data["items"]:
-            title = item["title"]
-            desc = item["snippet"]
+            title = item.get("title")
+            desc = item.get("snippet")
             if img:
                 image_url = item["link"]
                 try:
