@@ -147,7 +147,7 @@ class Search:
             )
             error = resp.get("error")
             if error:
-                if error.get("errors")[0].get("domain") == "usageLimits":
+                if "Quota exceeded" in error.get("errors")[0].get("message"):
                     if self.shuffle:
                         self.log.warning(
                             "Key {} is out of requests. I've removed it from my list.".format(
